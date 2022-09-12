@@ -3,7 +3,15 @@ import socketserver
 
 class Handler(socketserver.StreamRequestHandler):
     def handle(self):
-        self.wfile.write(self.rfile.read())
+        while True:
+            data = self.rfile.read(1)
+
+            if not data:
+                break
+
+            print('{}:{} >> {}'.format(self.client_address[0], self.client_address[1], data))
+
+            self.wfile.write(data)
 
 
 if __name__ == '__main__':
