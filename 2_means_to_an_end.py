@@ -1,5 +1,6 @@
 from protohacker_server import ProtohackerHandler, run_server
-from data_stream import DataStream
+from collections import OrderedDict
+import statistics
 
 
 class MeansToAnEndHandler(ProtohackerHandler):
@@ -9,15 +10,14 @@ class MeansToAnEndHandler(ProtohackerHandler):
     def setup(self):
         super(MeansToAnEndHandler, self).setup()
 
-        self.rstream = DataStream(self.rfile, DataStream.BSA_NETWORK)
-        self.wstream = DataStream(self.wfile, DataStream.BSA_NETWORK)
-        self.prices = {}
+        self.prices = OrderedDict()
 
     def handle(self):
         while True:
             message_type = self.rstream.read_byte()
 
-            print(message_type)
+            if not message_type:
+                break
 
             if message_type == MeansToAnEndHandler.MESSAGE_INSERT:
                 timestamp = self.rstream.read_int32()
@@ -30,6 +30,14 @@ class MeansToAnEndHandler(ProtohackerHandler):
                 maxtime = self.rstream.read_int32()
 
                 mean = 0
+
+                if mintime <= maxtime:
+                    self.prices = OrderedDict(sorted(self.prices.items(), key=lambda item: item[0]))
+
+                    prices_for_mean = [price for timestamp, price in self.prices.items() if mintime <= timestamp <= maxtime]
+
+                    if prices_for_mean:
+                        mean = int(statistics.mean(prices_for_mean))
 
                 self.wstream.write_int32(mean)
 

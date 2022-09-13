@@ -1,3 +1,4 @@
+from data_stream import DataStream
 import socketserver
 
 
@@ -7,6 +8,12 @@ class ProtohackerServer(socketserver.ThreadingTCPServer):
 
 
 class ProtohackerHandler(socketserver.StreamRequestHandler):
+    def setup(self):
+        super(ProtohackerHandler, self).setup()
+
+        self.rstream = DataStream(self.rfile, DataStream.BSA_NETWORK)
+        self.wstream = DataStream(self.wfile, DataStream.BSA_NETWORK)
+
     def handle(self):
         raise NotImplementedError('Must be implemented')
 
