@@ -1,19 +1,16 @@
-import socketserver
+from protohacker_server import ProtohackerHandler, run_server
 
 
-class Handler(socketserver.StreamRequestHandler):
+class SmokeTestHandler(ProtohackerHandler):
     def handle(self):
-        while True:
-            data = self.rfile.read(1)
+        data = self.rfile.readline()
 
-            if not data:
-                break
+        if not data:
+            return
 
-            print('{}:{} >> {}'.format(self.client_address[0], self.client_address[1], data))
+        print('{}:{} >> {}'.format(self.client_address[0], self.client_address[1], data))
 
-            self.wfile.write(data)
+        self.wfile.write(data)
 
 
-if __name__ == '__main__':
-    with socketserver.ThreadingTCPServer(('0.0.0.0', 1664), Handler) as server:
-        server.serve_forever()
+run_server(SmokeTestHandler)
