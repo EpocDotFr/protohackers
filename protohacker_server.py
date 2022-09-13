@@ -10,8 +10,10 @@ class ProtohackerHandler(socketserver.StreamRequestHandler):
     def handle(self):
         raise NotImplementedError('Must be implemented')
 
-    def log_data(self, data):
-        print('{}:{} >> {}'.format(self.client_address[0], self.client_address[1], data))
+    def log(self, data):
+        ip, port = self.client_address
+
+        print('{}:{} >> {}'.format(ip, port, data))
 
 
 def run_server(handler_class, server_class=ProtohackerServer):

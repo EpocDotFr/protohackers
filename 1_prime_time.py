@@ -12,7 +12,7 @@ class PrimeTimeHandler(ProtohackerHandler):
             if not data:
                 break
 
-            self.log_data(data)
+            self.log(data)
 
             try:
                 if not data.startswith('{') or not data.endswith('}'):

@@ -6,7 +6,7 @@ class SmokeTestHandler(ProtohackerHandler):
         while True:
             data = self.rfile.read(1)
 
-            self.log_data(data)
+            self.log(data)
 
             if not data:
                 break
