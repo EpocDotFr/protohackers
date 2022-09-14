@@ -1,10 +1,10 @@
-from protohacker_server import ProtohackerHandler, run_server
 from collections import OrderedDict
 from json import JSONDecodeError
+import protohackers
 import json
 
 
-class PrimeTimeHandler(ProtohackerHandler):
+class PrimeTimeHandler(protohackers.Handler):
     def handle(self):
         while True:
             data = self.rfile.readline().decode('utf-8').strip()
@@ -79,4 +79,4 @@ def is_prime(n):
     return True
 
 
-run_server(PrimeTimeHandler)
+protohackers.run_server(PrimeTimeHandler)

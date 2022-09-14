@@ -1,7 +1,7 @@
-from protohacker_server import ProtohackerHandler, run_server
+import protohackers
 
 
-class SmokeTestHandler(ProtohackerHandler):
+class SmokeTestHandler(protohackers.Handler):
     def handle(self):
         while True:
             data = self.rfile.read(1)
@@ -14,4 +14,4 @@ class SmokeTestHandler(ProtohackerHandler):
             self.wfile.write(data)
 
 
-run_server(SmokeTestHandler)
+protohackers.run_server(SmokeTestHandler)

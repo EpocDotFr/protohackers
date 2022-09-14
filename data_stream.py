@@ -2,52 +2,42 @@ import struct
 
 
 class FloatType(float):
-    """float type wrapper."""
     pass
 
 
 class DoubleType(float):
-    """double type wrapper."""
     pass
 
 
 class Int8Type(int):
-    """int8 (byte) type wrapper."""
     pass
 
 
 class UInt8Type(int):
-    """uint8 type wrapper."""
     pass
 
 
 class Int16Type(int):
-    """int16 (short) type wrapper."""
     pass
 
 
 class UInt16Type(int):
-    """uint16 type wrapper."""
     pass
 
 
 class Int32Type(int):
-    """int32 (int) type wrapper."""
     pass
 
 
 class UInt32Type(int):
-    """uint32 type wrapper."""
     pass
 
 
 class Int64Type(int):
-    """int64 (long) type wrapper."""
     pass
 
 
 class UInt64Type(int):
-    """uint64 type wrapper."""
     pass
 
 

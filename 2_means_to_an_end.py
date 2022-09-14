@@ -1,12 +1,9 @@
-from protohacker_server import ProtohackerHandler, run_server
 from collections import OrderedDict
+import protohackers
 import statistics
 
 
-class MeansToAnEndHandler(ProtohackerHandler):
-    MESSAGE_INSERT = b'I'
-    MESSAGE_QUERY = b'Q'
-
+class MeansToAnEndHandler(protohackers.Handler):
     def setup(self):
         super(MeansToAnEndHandler, self).setup()
 
@@ -19,13 +16,13 @@ class MeansToAnEndHandler(ProtohackerHandler):
             if not message_type:
                 break
 
-            if message_type == MeansToAnEndHandler.MESSAGE_INSERT:
+            if message_type == b'I':
                 timestamp = self.rstream.read_int32()
                 price = self.rstream.read_int32()
 
                 if timestamp not in self.prices:
                     self.prices[timestamp] = price
-            elif message_type == MeansToAnEndHandler.MESSAGE_QUERY:
+            elif message_type == b'Q':
                 mintime = self.rstream.read_int32()
                 maxtime = self.rstream.read_int32()
 
@@ -42,4 +39,4 @@ class MeansToAnEndHandler(ProtohackerHandler):
                 self.wstream.write_int32(mean)
 
 
-run_server(MeansToAnEndHandler)
+protohackers.run_server(MeansToAnEndHandler)

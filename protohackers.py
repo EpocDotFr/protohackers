@@ -2,14 +2,14 @@ from data_stream import DataStream
 import socketserver
 
 
-class ProtohackerServer(socketserver.ThreadingTCPServer):
+class Server(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
     daemon_threads = True
 
 
-class ProtohackerHandler(socketserver.StreamRequestHandler):
+class Handler(socketserver.StreamRequestHandler):
     def setup(self):
-        super(ProtohackerHandler, self).setup()
+        super(Handler, self).setup()
 
         self.rstream = DataStream(self.rfile, DataStream.BSA_NETWORK)
         self.wstream = DataStream(self.wfile, DataStream.BSA_NETWORK)
@@ -23,7 +23,7 @@ class ProtohackerHandler(socketserver.StreamRequestHandler):
         print('{}:{} >> {}'.format(ip, port, data))
 
 
-def run_server(handler_class, server_class=ProtohackerServer):
+def run_server(handler_class, server_class=Server):
     ip = '0.0.0.0'
     port = 1664
 
