@@ -8,11 +8,13 @@ class Server(socketserver.ThreadingTCPServer):
 
 
 class Handler(socketserver.StreamRequestHandler):
+    bsa = DataStream.BSA_NETWORK
+
     def setup(self):
         super(Handler, self).setup()
 
-        self.rstream = DataStream(self.rfile, DataStream.BSA_NETWORK)
-        self.wstream = DataStream(self.wfile, DataStream.BSA_NETWORK)
+        self.rstream = DataStream(self.rfile, self.bsa)
+        self.wstream = DataStream(self.wfile, self.bsa)
 
     def handle(self):
         raise NotImplementedError('Must be implemented')
@@ -20,7 +22,7 @@ class Handler(socketserver.StreamRequestHandler):
     def log(self, data):
         ip, port = self.client_address
 
-        print('{}:{} >> {}'.format(ip, port, data))
+        print(f'{ip}:{port} >> {data}')
 
 
 def run_server(handler_class, server_class=Server):
