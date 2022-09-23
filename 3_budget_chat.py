@@ -62,7 +62,7 @@ class BudgetChatHandler(protohackers.ClientsAwareHandlerMixin, protohackers.Hand
 
         chatters_name = chatters_name or 'nobody'
 
-        self.send_message(f'* Welcome {self.name}, now chatting with {chatters_name}')
+        self.send_message(f'* Hi bruh, now chatting with {chatters_name}')
 
     def receive_message(self):
         message = self.rfile.readline().decode('ascii').strip()
