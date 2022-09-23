@@ -3,7 +3,7 @@ import protohackers
 import statistics
 
 
-class MeansToAnEndHandler(protohackers.Handler):
+class MeansToAnEndHandler(protohackers.Handler, protohackers.HasDataStreamsHandlerMixin):
     def setup(self):
         super(MeansToAnEndHandler, self).setup()
 

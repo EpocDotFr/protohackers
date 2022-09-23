@@ -2,27 +2,64 @@ from data_stream import DataStream
 import socketserver
 
 
+class ClientsAwareServerMixin:
+    def __init__(self, *args, **kvargs):
+        super(ClientsAwareServerMixin, self).__init__(*args, **kvargs)
+
+        self.clients = set()
+
+    def broadcast(self, sender, data):
+        for client in self.clients:
+            if not client.name or client is sender:
+                continue
+
+            client.send_broadcast(data)
+
+
 class Server(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
     daemon_threads = True
 
 
-class Handler(socketserver.StreamRequestHandler):
+class HasDataStreamsHandlerMixin:
     bsa = DataStream.BSA_NETWORK
 
     def setup(self):
-        super(Handler, self).setup()
+        super(HasDataStreamsHandlerMixin, self).setup()
 
         self.rstream = DataStream(self.rfile, self.bsa)
         self.wstream = DataStream(self.wfile, self.bsa)
 
+
+class ClientsAwareHandlerMixin:
+    def setup(self):
+        super(ClientsAwareHandlerMixin, self).setup()
+
+        self.server.clients.add(self)
+
+
+    def finish(self):
+        self.server.clients.remove(self)
+
+        super(ClientsAwareHandlerMixin, self).finish()
+
+    def broadcast(self, data):
+        self.server.broadcast(self, data)
+
+    def send_broadcast(self):
+        raise NotImplementedError('Must be implemented')
+
+
+class Handler(socketserver.StreamRequestHandler):
     def handle(self):
         raise NotImplementedError('Must be implemented')
 
-    def log(self, data):
+    def log(self, data, inbound=True):
         ip, port = self.client_address
 
-        print(f'{ip}:{port} >> {data}')
+        chevrons = '>>' if inbound else '<<'
+
+        print(f'{ip}:{port} {chevrons} {data}')
 
 
 def run_server(handler_class, server_class=Server):
