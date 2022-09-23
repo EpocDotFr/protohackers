@@ -37,7 +37,6 @@ class ClientsAwareHandlerMixin:
 
         self.server.clients.add(self)
 
-
     def finish(self):
         self.server.clients.remove(self)
 
@@ -46,7 +45,7 @@ class ClientsAwareHandlerMixin:
     def broadcast(self, data):
         self.server.broadcast(self, data)
 
-    def send_broadcast(self):
+    def send_broadcast(self, data):
         raise NotImplementedError('Must be implemented')
 
 
