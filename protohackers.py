@@ -9,8 +9,8 @@ class ClientsAwareServerMixin:
         self.clients = set()
 
     def broadcast(self, sender, data):
-        for client in self.clients:
-            if not client.name or client is sender:
+        for client in self.clients.copy():
+            if not client or not client.name or client is sender:
                 continue
 
             client.send_broadcast(data)
