@@ -8,9 +8,9 @@ class ClientsAwareServerMixin:
 
         self.clients = set()
 
-    def broadcast(self, sender, data):
+    def broadcast(self, sender, data, ignore_sender=True):
         for client in self.clients.copy():
-            if not client or not client.name or client is sender:
+            if not client.is_broadcastable() or (ignore_sender and client is sender):
                 continue
 
             client.send_broadcast(data)
@@ -42,10 +42,13 @@ class ClientsAwareHandlerMixin:
 
         super(ClientsAwareHandlerMixin, self).finish()
 
-    def broadcast(self, data):
-        self.server.broadcast(self, data)
+    def broadcast(self, data, ignore_self=True):
+        self.server.broadcast(self, data, ignore_sender=ignore_self)
 
     def send_broadcast(self, data):
+        raise NotImplementedError('Must be implemented')
+
+    def is_broadcastable(self):
         raise NotImplementedError('Must be implemented')
 
 

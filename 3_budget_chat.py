@@ -17,6 +17,9 @@ class BudgetChatHandler(protohackers.ClientsAwareHandlerMixin, protohackers.Hand
     def send_broadcast(self, data):
         self.send_message(data)
 
+    def is_broadcastable(self):
+        return True if self.name else False
+
     def handle(self):
         self.name = self.get_name()
 
@@ -57,7 +60,7 @@ class BudgetChatHandler(protohackers.ClientsAwareHandlerMixin, protohackers.Hand
 
     def send_chatters_list(self):
         chatters_name = ', '.join(
-            [client.name for client in self.server.clients if client.name and client is not self]
+            [client.name for client in self.server.clients.copy() if client.is_broadcastable() and client is not self]
         )
 
         chatters_name = chatters_name or 'nobody'
