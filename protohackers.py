@@ -13,7 +13,10 @@ class ClientsAwareServerMixin:
             if not client.is_broadcastable() or (ignore_sender and client is sender):
                 continue
 
-            client.send_broadcast(data)
+            try:
+                client.send_broadcast(data)
+            except ConnectionError:
+                self.clients.remove(client)
 
 
 class Server(socketserver.ThreadingTCPServer):
