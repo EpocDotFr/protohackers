@@ -1,5 +1,7 @@
 # Protohackers
 
+<img src="https://protohackers.com/logo.png" align="right">
+
 Source code of my solutions to the [Protohackers](https://protohackers.com/) challenges.
 
 I've put myself a personal challenge: do not use any third-party packages (only use built-in Python features).
