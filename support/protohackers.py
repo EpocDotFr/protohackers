@@ -1,4 +1,4 @@
-from data_stream import DataStream
+from .data_stream import DataStream
 import socketserver
 
 

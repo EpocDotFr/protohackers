@@ -1,6 +1,6 @@
 from collections import OrderedDict
+from support import protohackers
 from json import JSONDecodeError
-import protohackers
 import json
 
 

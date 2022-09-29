@@ -1,4 +1,4 @@
-import protohackers
+from support import protohackers
 import re
 
 NAME_REGEX = re.compile(r'^[a-zA-Z0-9]{1,16}$')

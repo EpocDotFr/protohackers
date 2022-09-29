@@ -1,4 +1,4 @@
-import protohackers
+from support import protohackers
 
 
 class SmokeTestHandler(protohackers.Handler):

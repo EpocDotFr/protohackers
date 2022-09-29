@@ -1,5 +1,5 @@
 from collections import OrderedDict
-import protohackers
+from support import protohackers
 import statistics
 
 
