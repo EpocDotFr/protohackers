@@ -1,9 +1,10 @@
 from collections import OrderedDict
 from support import protohackers
 import statistics
+import struct
 
 
-class MeansToAnEndHandler(protohackers.HasDataStreamsHandlerMixin, protohackers.Handler):
+class MeansToAnEndHandler(protohackers.Handler):
     def setup(self):
         super(MeansToAnEndHandler, self).setup()
 
@@ -11,20 +12,18 @@ class MeansToAnEndHandler(protohackers.HasDataStreamsHandlerMixin, protohackers.
 
     def handle(self):
         while True:
-            message_type = self.rstream.read_byte()
+            message_type, = self.rfile.read(1)
 
             if not message_type:
                 break
 
             if message_type == b'I':
-                timestamp = self.rstream.read_int32()
-                price = self.rstream.read_int32()
+                timestamp, price = struct.unpack('@ii', self.rfile.read(8))
 
                 if timestamp not in self.prices:
                     self.prices[timestamp] = price
             elif message_type == b'Q':
-                mintime = self.rstream.read_int32()
-                maxtime = self.rstream.read_int32()
+                mintime, maxtime = struct.unpack('@ii', self.rfile.read(8))
 
                 mean = 0
 
@@ -36,7 +35,7 @@ class MeansToAnEndHandler(protohackers.HasDataStreamsHandlerMixin, protohackers.
                     if prices_for_mean:
                         mean = int(statistics.mean(prices_for_mean))
 
-                self.wstream.write_int32(mean)
+                self.wfile.write(struct.pack('@i', mean))
 
 
 protohackers.run_server(MeansToAnEndHandler)

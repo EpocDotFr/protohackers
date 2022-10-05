@@ -1,4 +1,3 @@
-from .data_stream import DataStream
 import socketserver
 
 
@@ -22,16 +21,6 @@ class ClientsAwareServerMixin:
 class Server(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
     daemon_threads = True
-
-
-class HasDataStreamsHandlerMixin:
-    bsa = DataStream.BSA_NETWORK
-
-    def setup(self):
-        super(HasDataStreamsHandlerMixin, self).setup()
-
-        self.rstream = DataStream(self.rfile, self.bsa)
-        self.wstream = DataStream(self.wfile, self.bsa)
 
 
 class ClientsAwareHandlerMixin:
