@@ -12,7 +12,7 @@ class MeansToAnEndHandler(protohackers.Handler):
 
     def handle(self):
         while True:
-            message_type, = self.rfile.read(1)
+            message_type = self.rfile.read(1)
 
             if not message_type:
                 break
