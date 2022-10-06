@@ -12,7 +12,10 @@ class MeansToAnEndHandler(protohackers.Handler):
 
     def handle(self):
         while True:
-            message_type, int_1, int_2 = struct.unpack('@cii', self.rfile.read(9))
+            try:
+                message_type, int_1, int_2 = struct.unpack('!cii', self.rfile.read(9))
+            except struct.error:
+                break
 
             if not message_type:
                 break
@@ -34,7 +37,7 @@ class MeansToAnEndHandler(protohackers.Handler):
                     if prices_for_mean:
                         mean = int(statistics.mean(prices_for_mean))
 
-                self.wfile.write(struct.pack('@i', mean))
+                self.wfile.write(struct.pack('!i', mean))
 
 
 protohackers.run_server(MeansToAnEndHandler)
