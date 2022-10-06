@@ -12,19 +12,18 @@ class MeansToAnEndHandler(protohackers.Handler):
 
     def handle(self):
         while True:
-            message_type = self.rfile.read(1)
+            message_type, int_1, int_2 = struct.unpack('@cii', self.rfile.read(9))
 
             if not message_type:
                 break
 
             if message_type == b'I':
-                timestamp, price = struct.unpack('@ii', self.rfile.read(8))
+                timestamp, price = int_1, int_2
 
                 if timestamp not in self.prices:
                     self.prices[timestamp] = price
             elif message_type == b'Q':
-                mintime, maxtime = struct.unpack('@ii', self.rfile.read(8))
-
+                mintime, maxtime = int_1, int_2
                 mean = 0
 
                 if mintime <= maxtime:
