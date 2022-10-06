@@ -4,7 +4,7 @@ import statistics
 import struct
 
 
-class MeansToAnEndHandler(protohackers.Handler):
+class MeansToAnEndHandler(protohackers.TCPHandler):
     def setup(self):
         super(MeansToAnEndHandler, self).setup()
 
@@ -40,4 +40,4 @@ class MeansToAnEndHandler(protohackers.Handler):
                 self.wfile.write(struct.pack('!i', mean))
 
 
-protohackers.run_server(MeansToAnEndHandler)
+protohackers.run_server(MeansToAnEndHandler, protohackers.TCPServer)

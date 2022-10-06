@@ -4,7 +4,7 @@ from json import JSONDecodeError
 import json
 
 
-class PrimeTimeHandler(protohackers.Handler):
+class PrimeTimeHandler(protohackers.TCPHandler):
     def handle(self):
         while True:
             data = self.rfile.readline().decode('utf-8').strip()
@@ -79,4 +79,4 @@ def is_prime(n):
     return True
 
 
-protohackers.run_server(PrimeTimeHandler)
+protohackers.run_server(PrimeTimeHandler, protohackers.TCPServer)

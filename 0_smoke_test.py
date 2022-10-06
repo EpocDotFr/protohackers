@@ -1,7 +1,7 @@
 from support import protohackers
 
 
-class SmokeTestHandler(protohackers.Handler):
+class SmokeTestHandler(protohackers.TCPHandler):
     def handle(self):
         while True:
             data = self.rfile.read(1)
@@ -14,4 +14,4 @@ class SmokeTestHandler(protohackers.Handler):
             self.wfile.write(data)
 
 
-protohackers.run_server(SmokeTestHandler)
+protohackers.run_server(SmokeTestHandler, protohackers.TCPServer)

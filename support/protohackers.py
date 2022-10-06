@@ -18,9 +18,17 @@ class ClientsAwareServerMixin:
                 self.clients.remove(client)
 
 
-class Server(socketserver.ThreadingTCPServer):
+class ServerMixin:
     allow_reuse_address = True
     daemon_threads = True
+
+
+class TCPServer(ServerMixin, socketserver.ThreadingTCPServer):
+    pass
+
+
+class UDPServer(ServerMixin, socketserver.ThreadingUDPServer):
+    pass
 
 
 class ClientsAwareHandlerMixin:
@@ -44,10 +52,7 @@ class ClientsAwareHandlerMixin:
         raise NotImplementedError('Must be implemented')
 
 
-class Handler(socketserver.StreamRequestHandler):
-    def handle(self):
-        raise NotImplementedError('Must be implemented')
-
+class HandlerMixing:
     def log(self, data, inbound=True):
         ip, port = self.client_address
 
@@ -56,7 +61,15 @@ class Handler(socketserver.StreamRequestHandler):
         print(f'{ip}:{port} {chevrons} {data}')
 
 
-def run_server(handler_class, server_class=Server):
+class TCPHandler(HandlerMixing, socketserver.StreamRequestHandler):
+    pass
+
+
+class UDPHandler(HandlerMixing, socketserver.DatagramRequestHandler):
+    pass
+
+
+def run_server(handler_class, server_class):
     ip = '0.0.0.0'
     port = 1664
 

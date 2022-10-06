@@ -4,11 +4,11 @@ import re
 NAME_REGEX = re.compile(r'^[a-zA-Z0-9]{1,16}$')
 
 
-class BudgetChatServer(protohackers.ClientsAwareServerMixin, protohackers.Server):
+class BudgetChatServer(protohackers.ClientsAwareServerMixin, protohackers.TCPServer):
     pass
 
 
-class BudgetChatHandler(protohackers.ClientsAwareHandlerMixin, protohackers.Handler):
+class BudgetChatHandler(protohackers.ClientsAwareHandlerMixin, protohackers.TCPHandler):
     def setup(self):
         super(BudgetChatHandler, self).setup()
 
