@@ -1,21 +1,43 @@
 from support import protohackers
 
 
+class UnusualDatabaseProgramServer(protohackers.UDPServer):
+    def __init__(self, *args, **kvargs):
+        super(UnusualDatabaseProgramServer, self).__init__(*args, **kvargs)
+
+        self.data = {
+            b'version': b'Next Gen Redis/1.0'
+        }
+
+
 class UnusualDatabaseProgramHandler(protohackers.UDPHandler):
     def handle(self):
-        packet = self.packet.decode('utf-8').strip()
-
-        if len(packet) >= 1000:
+        if len(self.packet) >= 1000:
             return
 
-        packet_parsed = packet.split('=', maxsplit=1)
+        packet = self.packet.split(b'=', maxsplit=1)
 
-        self.log(packet_parsed)
+        self.log(packet)
 
-        if len(packet_parsed) == 1: # Retrieve
-            pass
-        else: # Insert
-            pass
+        if len(packet) == 1:  # Retrieve
+            key, = packet
+            value = self.server.data.get(key, b'')
+
+            self.send_response(key, value)
+        else:  # Insert
+            key, value = packet
+
+            if key == b'version':
+                return
+
+            self.server.data[key] = value
+
+    def send_response(self, key, value):
+        packet = [key, value]
+
+        self.log(packet, inbound=False)
+
+        self.respond(b'='.join(packet))
 
 
-protohackers.run_server(UnusualDatabaseProgramHandler, protohackers.UDPServer)
+protohackers.run_server(UnusualDatabaseProgramHandler, UnusualDatabaseProgramServer)

@@ -7,7 +7,7 @@ import json
 class PrimeTimeHandler(protohackers.TCPHandler):
     def handle(self):
         while True:
-            data = self.rfile.readline().decode('utf-8').strip()
+            data = self.rfile.readline().decode('ascii').strip()
 
             if not data:
                 break
