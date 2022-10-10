@@ -14,4 +14,5 @@ class SmokeTestHandler(protohackers.TCPHandler):
             self.wfile.write(data)
 
 
-protohackers.run_server(SmokeTestHandler, protohackers.TCPServer)
+if __name__ == '__main__':
+    protohackers.run_server(SmokeTestHandler, protohackers.TCPServer)

@@ -40,4 +40,5 @@ class UnusualDatabaseProgramHandler(protohackers.UDPHandler):
         self.respond(b'='.join(packet))
 
 
-protohackers.run_server(UnusualDatabaseProgramHandler, UnusualDatabaseProgramServer)
+if __name__ == '__main__':
+    protohackers.run_server(UnusualDatabaseProgramHandler, UnusualDatabaseProgramServer)

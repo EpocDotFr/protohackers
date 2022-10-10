@@ -82,4 +82,5 @@ class BudgetChatHandler(protohackers.ClientsAwareHandlerMixin, protohackers.TCPH
         self.wfile.write(message)
 
 
-protohackers.run_server(BudgetChatHandler, BudgetChatServer)
+if __name__ == '__main__':
+    protohackers.run_server(BudgetChatHandler, BudgetChatServer)

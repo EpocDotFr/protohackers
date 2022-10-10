@@ -40,4 +40,5 @@ class MeansToAnEndHandler(protohackers.TCPHandler):
                 self.wfile.write(struct.pack('!i', mean))
 
 
-protohackers.run_server(MeansToAnEndHandler, protohackers.TCPServer)
+if __name__ == '__main__':
+    protohackers.run_server(MeansToAnEndHandler, protohackers.TCPServer)

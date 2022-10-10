@@ -79,4 +79,5 @@ def is_prime(n):
     return True
 
 
-protohackers.run_server(PrimeTimeHandler, protohackers.TCPServer)
+if __name__ == '__main__':
+    protohackers.run_server(PrimeTimeHandler, protohackers.TCPServer)
