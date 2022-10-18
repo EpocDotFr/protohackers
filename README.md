@@ -1,6 +1,6 @@
 # Protohackers
 
-<img src="https://protohackers.com/logo.png" align="right">
+<img src="/logo.png?raw=true" align="right">
 
 Source code of my solutions to the [Protohackers](https://protohackers.com/) challenges.
 
