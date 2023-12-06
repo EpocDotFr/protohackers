@@ -65,13 +65,8 @@ class TCPHandler(HandlerMixing, socketserver.StreamRequestHandler):
     pass
 
 
-class UDPHandler(HandlerMixing, socketserver.BaseRequestHandler):
-    """Built-in DatagramRequestHandler is buggy so I implemented my own"""
-    def setup(self):
-        self.packet, self.socket = self.request
-
-    def respond(self, data):
-        self.socket.sendto(data, self.client_address)
+class UDPHandler(HandlerMixing, socketserver.DatagramRequestHandler):
+    pass
 
 
 def run_server(handler_class, server_class):

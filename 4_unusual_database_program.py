@@ -37,7 +37,7 @@ class UnusualDatabaseProgramHandler(protohackers.UDPHandler):
 
         self.log(packet, inbound=False)
 
-        self.respond(b'='.join(packet))
+        self.wfile.write(b'='.join(packet))
 
 
 if __name__ == '__main__':
