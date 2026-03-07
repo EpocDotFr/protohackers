@@ -1,18 +1,18 @@
+from asyncio import StreamReader, StreamWriter
 from support import protohackers
 
 
-class SmokeTestHandler(protohackers.TCPHandler):
-    def handle(self):
-        while True:
-            data = self.rfile.read(1)
+async def smoke_test(reader: StreamReader, writer: StreamWriter) -> None:
+    while True:
+        data = await reader.read(1)
 
-            self.log(data)
+        if not data:
+            break
 
-            if not data:
-                break
+        writer.write(data)
 
-            self.wfile.write(data)
+        await writer.drain()
 
 
 if __name__ == '__main__':
-    protohackers.run_server(SmokeTestHandler, protohackers.TCPServer)
+    protohackers.run_server(smoke_test)

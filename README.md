@@ -8,7 +8,7 @@ I've put myself a personal challenge: do not use any third-party packages (only 
 
 ## Prerequisites
 
-Python >= 3.8.
+Python >= 3.12.
 
 ## Installation
 
@@ -16,7 +16,7 @@ Clone this repo.
 
 ## Configuration
 
-Forward port `1664` from your router to your computer.
+Forward port `64444` from your router to your computer.
 
 ## Usage
 
