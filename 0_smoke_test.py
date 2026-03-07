@@ -3,8 +3,12 @@ from support import protohackers
 
 
 async def smoke_test(reader: StreamReader, writer: StreamWriter) -> None:
+    logger = protohackers.create_logger(writer)
+
     while True:
         data = await reader.read(1)
+
+        logger.debug(f'>> {data}')
 
         if not data:
             break
