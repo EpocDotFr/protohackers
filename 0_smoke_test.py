@@ -5,17 +5,17 @@ from support import protohackers
 async def smoke_test(reader: StreamReader, writer: StreamWriter) -> None:
     logger = protohackers.create_logger(writer)
 
-    while True:
-        data = await reader.read(1)
+    data = await reader.read()
 
-        logger.debug(f'>> {data}')
+    logger.debug(f'>> {data}')
 
-        if not data:
-            break
+    writer.write(data)
 
-        writer.write(data)
+    await writer.drain()
 
-        await writer.drain()
+    writer.close()
+
+    await writer.wait_closed()
 
 
 if __name__ == '__main__':
