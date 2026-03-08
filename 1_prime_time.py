@@ -1,60 +1,55 @@
-from collections import OrderedDict
+from asyncio import StreamReader, StreamWriter
 from support import protohackers
 from json import JSONDecodeError
 import json
 
 
-class PrimeTimeHandler(protohackers.TCPHandler):
-    def handle(self):
-        while True:
-            data = self.rfile.readline().decode('ascii').strip()
+async def prime_time(reader: StreamReader, writer: StreamWriter) -> None:
+    logger = protohackers.create_logger(writer)
 
-            if not data:
-                break
+    while True:
+        data = (await reader.readline()).decode('ascii').strip()
 
-            self.log(data)
+        if not data:
+            writer.close()
 
-            try:
-                if not data.startswith('{') or not data.endswith('}'):
-                    raise ValueError()
+            await writer.wait_closed()
 
-                json_data = json.loads(data)
+            break
 
-                is_malformed_request = 'method' not in json_data or \
-                                        'number' not in json_data or \
-                                        json_data['method'] != 'isPrime' or \
-                                        not isinstance(json_data['number'], (int, float)) or \
-                                        isinstance(json_data['number'], bool)
+        logger.debug(f'>> {data}')
 
-                if is_malformed_request:
-                    raise ValueError()
+        try:
+            if not data.startswith('{') or not data.endswith('}'):
+                raise ValueError()
 
-                self.send_response(
-                    is_prime(json_data['number']) if isinstance(json_data['number'], int) else False
-                )
-            except (JSONDecodeError, ValueError):
-                self.send_error()
+            json_data = json.loads(data)
 
-                break
+            is_malformed_request = 'method' not in json_data or \
+                                   'number' not in json_data or \
+                                   json_data['method'] != 'isPrime' or \
+                                   not isinstance(json_data['number'], (int, float)) or \
+                                   isinstance(json_data['number'], bool)
 
-    def send_response(self, prime):
-        self.send(OrderedDict([
-            ('method', 'isPrime'),
-            ('prime', prime),
-        ]))
+            if is_malformed_request:
+                raise ValueError()
 
-    def send_error(self):
-        self.send(OrderedDict([
-            ('method', 'error'),
-        ]))
+            writer.write((json.dumps({'method': 'isPrime', 'prime': is_prime(json_data['number']) if isinstance(json_data['number'], int) else False}) + '\n').encode('utf-8'))
 
-    def send(self, data):
-        data = json.dumps(data) + '\n'
+            await writer.drain()
+        except (JSONDecodeError, ValueError):
+            writer.write((json.dumps({'method': 'error'}) + '\n').encode('utf-8'))
 
-        self.wfile.write(data.encode('utf-8'))
+            await writer.drain()
+
+            writer.close()
+
+            await writer.wait_closed()
+
+            break
 
 
-def is_prime(n):
+def is_prime(n: int) -> bool:
     if abs(n) == 1:
         return False
     if n == 2:
@@ -80,4 +75,4 @@ def is_prime(n):
 
 
 if __name__ == '__main__':
-    protohackers.run_server(PrimeTimeHandler, protohackers.TCPServer)
+    protohackers.run_server(prime_time)
