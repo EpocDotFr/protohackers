@@ -17,6 +17,8 @@ async def smoke_test(reader: StreamReader, writer: StreamWriter) -> None:
 
     await writer.wait_closed()
 
+    logger.info('Disconnected')
+
 
 if __name__ == '__main__':
     protohackers.run_server(smoke_test)

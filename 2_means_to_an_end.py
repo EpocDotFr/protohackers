@@ -6,25 +6,17 @@ import struct
 
 
 async def means_to_and_end(reader: StreamReader, writer: StreamWriter) -> None:
-    prices = OrderedDict()
-
     logger = protohackers.create_logger(writer)
+
+    prices = OrderedDict()
 
     while True:
         try:
             message_type, int_1, int_2 = struct.unpack('!cii', await reader.readexactly(9))
         except (struct.error, IncompleteReadError):
-            writer.close()
-
-            await writer.wait_closed()
-
             break
 
         if not message_type:
-            writer.close()
-
-            await writer.wait_closed()
-
             break
 
         logger.debug(f'>> {message_type} {int_1} {int_2}')
@@ -49,6 +41,12 @@ async def means_to_and_end(reader: StreamReader, writer: StreamWriter) -> None:
             writer.write(struct.pack('!i', mean))
 
             await writer.drain()
+
+    writer.close()
+
+    await writer.wait_closed()
+
+    logger.info('Disconnected')
 
 
 if __name__ == '__main__':

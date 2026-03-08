@@ -11,10 +11,6 @@ async def prime_time(reader: StreamReader, writer: StreamWriter) -> None:
         data = (await reader.readline()).decode('ascii').strip()
 
         if not data:
-            writer.close()
-
-            await writer.wait_closed()
-
             break
 
         logger.debug(f'>> {data}')
@@ -42,11 +38,13 @@ async def prime_time(reader: StreamReader, writer: StreamWriter) -> None:
 
             await writer.drain()
 
-            writer.close()
-
-            await writer.wait_closed()
-
             break
+
+    writer.close()
+
+    await writer.wait_closed()
+
+    logger.info('Disconnected')
 
 
 def is_prime(n: int) -> bool:
