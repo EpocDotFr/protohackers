@@ -12,6 +12,8 @@ def create_logger(writer: asyncio.StreamWriter) -> logging.Logger:
 
     logger.setLevel(logging.DEBUG)
 
+    logger.info('Connected')
+
     return logger
 
 
