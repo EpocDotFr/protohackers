@@ -13,6 +13,8 @@ async def smoke_test(reader: StreamReader, writer: StreamWriter) -> None:
 
     await writer.drain()
 
+    logger.debug(f'<< {data}')
+
     writer.close()
 
     await writer.wait_closed()

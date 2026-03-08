@@ -1,4 +1,6 @@
 from asyncio import StreamReader, StreamWriter
+from logging import Logger
+from typing import Any, OrderedDict
 from support import protohackers
 from json import JSONDecodeError
 import json
@@ -30,13 +32,13 @@ async def prime_time(reader: StreamReader, writer: StreamWriter) -> None:
             if is_malformed_request:
                 raise ValueError()
 
-            writer.write((json.dumps({'method': 'isPrime', 'prime': is_prime(json_data['number']) if isinstance(json_data['number'], int) else False}) + '\n').encode('utf-8'))
-
-            await writer.drain()
+            await send_response(
+                logger,
+                writer,
+                is_prime(json_data['number']) if isinstance(json_data['number'], int) else False
+            )
         except (JSONDecodeError, ValueError):
-            writer.write((json.dumps({'method': 'error'}) + '\n').encode('utf-8'))
-
-            await writer.drain()
+            await send_error(logger, writer)
 
             break
 
@@ -45,6 +47,29 @@ async def prime_time(reader: StreamReader, writer: StreamWriter) -> None:
     await writer.wait_closed()
 
     logger.info('Disconnected')
+
+
+async def send_response(logger: Logger, writer: StreamWriter, prime: bool) -> None:
+    await send(logger, writer, OrderedDict([
+        ('method', 'isPrime'),
+        ('prime', prime),
+    ]))
+
+
+async def send_error(logger: Logger, writer: StreamWriter) -> None:
+    await send(logger, writer, OrderedDict([
+        ('method', 'error'),
+    ]))
+
+
+async def send(logger: Logger, writer: StreamWriter, data: Any) -> None:
+    data = json.dumps(data) + '\n'
+
+    writer.write(data.encode('utf-8'))
+
+    await writer.drain()
+
+    logger.debug(f'<< {data}')
 
 
 def is_prime(n: int) -> bool:
