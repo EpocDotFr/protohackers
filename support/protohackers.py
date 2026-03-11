@@ -1,33 +1,154 @@
-from typing import Callable, Coroutine, Any
+from asyncio import StreamReader, StreamWriter
+from typing import Set
 import asyncio
 import logging
+import abc
 
 logging.basicConfig(level=logging.DEBUG)
 
 
-def create_logger(writer: asyncio.StreamWriter) -> logging.Logger:
-    ip, port = writer.get_extra_info('peername')
+class TcpHandler(metaclass=abc.ABCMeta):
+    server: 'TcpServer'
+    reader: StreamReader
+    writer: StreamWriter
 
-    logger = logging.getLogger(f'{ip}:{port}')
+    ip: str
+    port: int
 
-    logger.setLevel(logging.DEBUG)
+    logger: logging.Logger
 
-    logger.info('Connected')
+    def __init__(self, server: 'TcpServer', reader: StreamReader, writer: StreamWriter):
+        self.server = server
+        self.reader = reader
+        self.writer = writer
 
-    return logger
+        self.server.clients.add(self)
+
+        self.ip, self.port = self.writer.get_extra_info('peername')
+
+        self.logger = logging.getLogger(f'Client {self.ip}:{self.port}')
+
+        self.logger.setLevel(logging.DEBUG)
+
+        self.logger.info('Connected')
+
+    @abc.abstractmethod
+    async def handle(self) -> None:
+        raise NotImplementedError
+
+    async def finish(self) -> None:
+        self.writer.close()
+
+        await self.writer.wait_closed()
+
+        self.server.clients.remove(self)
+
+        self.logger.info('Disconnected')
+
+    async def broadcast(self, data, ignore_self: bool = True) -> None:
+        await self.server.broadcast(self, data, ignore_sender=ignore_self)
+
+    async def send_broadcast(self, data) -> None:
+        raise NotImplementedError('Must be implemented')
+
+    def is_broadcastable(self) -> bool:
+        raise NotImplementedError('Must be implemented')
 
 
-def run_server(callback: Callable[[asyncio.StreamReader, asyncio.StreamWriter], Coroutine[Any, Any, None]]) -> None:
-    ip = '0.0.0.0'
-    port = 64444
+class TcpServer:
+    ip: str
+    port: int
 
-    async def main_loop():
-        server = await asyncio.start_server(callback, ip, port)
+    logger: logging.Logger
+
+    clients: Set[TcpHandler]
+
+    def __init__(self, cls, ip: str, port: int):
+        self.cls = cls
+
+        self.ip = ip
+        self.port = port
+
+        self.logger = logging.getLogger('Server')
+
+        self.logger.setLevel(logging.DEBUG)
+
+        self.clients = set()
+
+        self.logger.info('Initialized')
+
+    async def broadcast(self, sender: TcpHandler, data, ignore_sender: bool = True) -> None:
+        for client in self.clients.copy():
+            if not client.is_broadcastable() or (ignore_sender and client is sender):
+                continue
+
+            try:
+                await client.send_broadcast(data)
+            except ConnectionResetError:
+                self.clients.remove(client)
+
+    async def handle_client(self, reader: StreamReader, writer: StreamWriter) -> None:
+        client = self.cls(self, reader, writer)
+
+        await client.handle()
+
+        await client.finish()
+
+    async def loop(self) -> None:
+        server = await asyncio.start_server(self.handle_client, self.ip, self.port)
 
         async with server:
             await server.serve_forever()
 
-    try:
-        asyncio.run(main_loop())
-    except KeyboardInterrupt:
-        pass
+    def run(self) -> None:
+        self.logger.info(f'Listening on {self.ip}:{self.port}')
+
+        try:
+            asyncio.run(self.loop())
+        except KeyboardInterrupt:
+            pass
+
+
+class UdpServer:
+    ip: str
+    port: int
+
+    logger: logging.Logger
+
+    def __init__(self, cls, ip: str, port: int):
+        self.cls = cls
+
+        self.ip = ip
+        self.port = port
+
+        self.logger = logging.getLogger('Server')
+
+        self.logger.setLevel(logging.DEBUG)
+
+        self.logger.info('Initialized')
+
+    async def loop(self) -> None:
+        server = await asyncio.start_server(self.handle_client, self.ip, self.port)
+
+        async with server:
+            await server.serve_forever()
+
+    def run(self) -> None:
+        self.logger.info(f'Listening on {self.ip}:{self.port}')
+
+        try:
+            asyncio.run(self.loop())
+        except KeyboardInterrupt:
+            pass
+
+
+def run_tcp_server(cls) -> None:
+    server = TcpServer(cls, '0.0.0.0', 64444)
+
+    server.run()
+
+
+def run_upd_server(cls) -> None:
+    server = UdpServer(cls, '0.0.0.0', 64444)
+
+    server.run()
