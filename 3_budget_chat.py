@@ -84,4 +84,4 @@ class BudgetChatHandler(protohackers.TcpHandler):
 
 
 if __name__ == '__main__':
-    protohackers.run_tcp_server(BudgetChatHandler)
+    protohackers.run_server(protohackers.TcpServer, BudgetChatHandler)

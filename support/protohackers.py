@@ -128,10 +128,11 @@ class UdpServer:
         self.logger.info('Initialized')
 
     async def loop(self) -> None:
-        server = await asyncio.start_server(self.handle_client, self.ip, self.port)
+        loop = asyncio.get_running_loop()
 
-        async with server:
-            await server.serve_forever()
+        transport, protocol = await loop.create_datagram_endpoint(self.cls,local_addr=(self.ip, self.port))
+
+        transport.close()
 
     def run(self) -> None:
         self.logger.info(f'Listening on {self.ip}:{self.port}')
@@ -142,13 +143,7 @@ class UdpServer:
             pass
 
 
-def run_tcp_server(cls) -> None:
-    server = TcpServer(cls, '0.0.0.0', 64444)
-
-    server.run()
-
-
-def run_upd_server(cls) -> None:
-    server = UdpServer(cls, '0.0.0.0', 64444)
+def run_server(server_cls, client_cls) -> None:
+    server = server_cls(client_cls, '0.0.0.0', 64444)
 
     server.run()

@@ -48,4 +48,4 @@ class MeansToAnEndHandler(protohackers.TcpHandler):
 
 
 if __name__ == '__main__':
-    protohackers.run_tcp_server(MeansToAnEndHandler)
+    protohackers.run_server(protohackers.TcpServer, MeansToAnEndHandler)

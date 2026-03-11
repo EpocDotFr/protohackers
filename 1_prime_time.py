@@ -84,4 +84,4 @@ def is_prime(n: int) -> bool:
 
 
 if __name__ == '__main__':
-    protohackers.run_tcp_server(PrimeTimeHandler)
+    protohackers.run_server(protohackers.TcpServer, PrimeTimeHandler)
