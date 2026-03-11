@@ -1,86 +1,87 @@
 from support import protohackers
+from typing import Optional, Union
 import re
 
 NAME_REGEX = re.compile(r'^[a-zA-Z0-9]{1,16}$')
 
 
-class BudgetChatServer(protohackers.ClientsAwareServerMixin, protohackers.TCPServer):
-    pass
+class BudgetChatHandler(protohackers.TcpHandler):
+    name: Optional[str]
 
-
-class BudgetChatHandler(protohackers.ClientsAwareHandlerMixin, protohackers.TCPHandler):
-    def setup(self):
-        super(BudgetChatHandler, self).setup()
+    def __init__(self, *args, **kvargs):
+        super(BudgetChatHandler, self).__init__(*args, **kvargs)
 
         self.name = None
 
-    def send_broadcast(self, data):
-        self.send_message(data)
+    async def send_broadcast(self, data) -> None:
+        await self.send_message(data)
 
-    def is_broadcastable(self):
+    def is_broadcastable(self) -> bool:
         return True if self.name else False
 
-    def handle(self):
-        self.name = self.get_name()
+    async def handle(self) -> None:
+        self.name = await self.get_name()
 
         if not self.name:
             return
 
-        self.send_chatters_list()
-        self.broadcast(f'* {self.name} joined the chat')
+        await self.send_chatters_list()
+        await self.broadcast(f'* {self.name} joined the chat')
 
         while True:
-            message = self.receive_message()
+            message = await self.receive_message()
 
             if not message:
                 break
 
-            self.broadcast(f'[{self.name}] {message}')
+            await self.broadcast(f'[{self.name}] {message}')
 
-    def finish(self):
+    async def finish(self) -> None:
         if self.name:
-            self.broadcast(f'* {self.name} left the chat')
+            await self.broadcast(f'* {self.name} left the chat')
 
-        super(BudgetChatHandler, self).finish()
+        await super(BudgetChatHandler, self).finish()
 
-    def get_name(self):
-        self.send_message('What\'s your name bruh?')
+    async def get_name(self) -> Union[bool, str]:
+        await self.send_message('What\'s your name mate?')
 
-        name = self.receive_message()
+        name = await self.receive_message()
 
         if not name:
             return False
 
         if not NAME_REGEX.search(name) or not 1 <= len(name) <= 16:
-            self.send_message('Bruh, invalid name')
+            await self.send_message('Invalid name bro')
 
             return False
 
         return name
 
-    def send_chatters_list(self):
+    async def send_chatters_list(self) -> None:
         chatters_name = ', '.join(
             [client.name for client in self.server.clients.copy() if client.is_broadcastable() and client is not self]
         )
 
         chatters_name = chatters_name or 'nobody'
 
-        self.send_message(f'* Hi bruh, now chatting with {chatters_name}')
+        await self.send_message(f'* Hey, now chatting with {chatters_name}')
 
-    def receive_message(self):
-        message = self.rfile.readline().decode('ascii').strip()
+    async def receive_message(self) -> str:
+        message = (await self.reader.readline()).decode('ascii').strip()
 
-        self.log(message)
+        self.logger.debug(f'>> {message}')
 
         return message
 
-    def send_message(self, message):
+    async def send_message(self, message) -> None:
         message = ''.join((message, '\n')).encode('ascii')
 
-        self.log(message, inbound=False)
+        self.logger.debug(f'<< {message}')
 
-        self.wfile.write(message)
+        self.writer.write(message)
+
+        await self.writer.drain()
 
 
 if __name__ == '__main__':
-    protohackers.run_server(BudgetChatHandler, BudgetChatServer)
+    protohackers.run_tcp_server(BudgetChatHandler)

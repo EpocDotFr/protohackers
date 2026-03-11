@@ -1,53 +1,51 @@
-from asyncio import StreamReader, StreamWriter, IncompleteReadError
+from asyncio import IncompleteReadError
 from collections import OrderedDict
 from support import protohackers
 import statistics
 import struct
 
 
-async def means_to_and_end(reader: StreamReader, writer: StreamWriter) -> None:
-    logger = protohackers.create_logger(writer)
+class MeansToAnEndHandler(protohackers.TcpHandler):
+    prices: OrderedDict
 
-    prices = OrderedDict()
+    def __init__(self, *args, **kvargs):
+        super(MeansToAnEndHandler, self).__init__(*args, **kvargs)
 
-    while True:
-        try:
-            message_type, int_1, int_2 = struct.unpack('!cii', await reader.readexactly(9))
-        except (struct.error, IncompleteReadError):
-            break
+        self.prices = OrderedDict()
 
-        if not message_type:
-            break
+    async def handle(self) -> None:
+        while True:
+            try:
+                message_type, int_1, int_2 = struct.unpack('!cii', await self.reader.readexactly(9))
+            except (struct.error, IncompleteReadError):
+                break
 
-        logger.debug(f'>> {message_type} {int_1} {int_2}')
+            if not message_type:
+                break
 
-        if message_type == b'I':
-            timestamp, price = int_1, int_2
+            self.logger.debug(f'>> {message_type} {int_1} {int_2}')
 
-            if timestamp not in prices:
-                prices[timestamp] = price
-        elif message_type == b'Q':
-            mintime, maxtime = int_1, int_2
-            mean = 0
+            if message_type == b'I':
+                timestamp, price = int_1, int_2
 
-            if mintime <= maxtime:
-                prices = OrderedDict(sorted(prices.items(), key=lambda item: item[0]))
+                if timestamp not in self.prices:
+                    self.prices[timestamp] = price
+            elif message_type == b'Q':
+                mintime, maxtime = int_1, int_2
+                mean = 0
 
-                prices_for_mean = [price for timestamp, price in prices.items() if mintime <= timestamp <= maxtime]
+                if mintime <= maxtime:
+                    prices = OrderedDict(sorted(self.prices.items(), key=lambda item: item[0]))
 
-                if prices_for_mean:
-                    mean = int(statistics.mean(prices_for_mean))
+                    prices_for_mean = [price for timestamp, price in prices.items() if mintime <= timestamp <= maxtime]
 
-            writer.write(struct.pack('!i', mean))
+                    if prices_for_mean:
+                        mean = int(statistics.mean(prices_for_mean))
 
-            await writer.drain()
+                self.writer.write(struct.pack('!i', mean))
 
-    writer.close()
-
-    await writer.wait_closed()
-
-    logger.info('Disconnected')
+                await self.writer.drain()
 
 
 if __name__ == '__main__':
-    protohackers.run_server(means_to_and_end)
+    protohackers.run_tcp_server(MeansToAnEndHandler)
