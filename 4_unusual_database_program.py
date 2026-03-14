@@ -1,7 +1,10 @@
 from support import protohackers
+from typing import Dict, Tuple
 
 
-class UnusualDatabaseProgramServer(protohackers.UDPServer):
+class UnusualDatabaseProgramServer(protohackers.UdpServer):
+    data: Dict[bytes, bytes]
+
     def __init__(self, *args, **kvargs):
         super(UnusualDatabaseProgramServer, self).__init__(*args, **kvargs)
 
@@ -10,22 +13,22 @@ class UnusualDatabaseProgramServer(protohackers.UDPServer):
         }
 
 
-class UnusualDatabaseProgramHandler(protohackers.UDPHandler):
-    def handle(self):
-        if len(self.packet) >= 1000:
+class UnusualDatabaseProgramHandler(protohackers.UdpHandler):
+    def handle(self, data, addr: Tuple[str, int]) -> None:
+        if len(data) >= 1000:
             return
 
-        packet = self.packet.split(b'=', maxsplit=1)
+        data = data.split(b'=', maxsplit=1)
 
-        self.log(packet)
+        self.logger.debug(f'>> {data}')
 
-        if len(packet) == 1:  # Retrieve
-            key, = packet
+        if len(data) == 1:  # Retrieve
+            key, = data
             value = self.server.data.get(key, b'')
 
             self.send_response(key, value)
         else:  # Insert
-            key, value = packet
+            key, value = data
 
             if key == b'version':
                 return
@@ -33,12 +36,12 @@ class UnusualDatabaseProgramHandler(protohackers.UDPHandler):
             self.server.data[key] = value
 
     def send_response(self, key, value):
-        packet = [key, value]
+        data = [key, value]
 
-        self.log(packet, inbound=False)
+        self.logger.debug(f'<< {data}')
 
-        self.wfile.write(b'='.join(packet))
+        self.transport.sendto(b'='.join(data), (self.ip, self.port))
 
 
 if __name__ == '__main__':
-    protohackers.run_server(UnusualDatabaseProgramHandler, UnusualDatabaseProgramServer)
+    protohackers.run_server(UnusualDatabaseProgramServer, UnusualDatabaseProgramHandler)

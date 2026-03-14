@@ -1,5 +1,5 @@
 from asyncio import StreamReader, StreamWriter
-from typing import Set
+from typing import Set, Tuple
 import asyncio
 import logging
 import abc
@@ -53,6 +53,36 @@ class TcpHandler(metaclass=abc.ABCMeta):
 
     def is_broadcastable(self) -> bool:
         raise NotImplementedError('Must be implemented')
+
+
+class UdpHandler(metaclass=abc.ABCMeta):
+    transport: asyncio.DatagramTransport
+
+    ip: str
+    port: int
+
+    logger: logging.Logger
+
+    @abc.abstractmethod
+    def handle(self, data, addr: Tuple[str, int]) -> None:
+        raise NotImplementedError
+
+    def finish(self) -> None:
+        self.transport.close()
+
+    def connection_made(self, transport: asyncio.DatagramTransport):
+        self.transport = transport
+
+    def datagram_received(self, data, addr: Tuple[str, int]):
+        self.ip, self.port = self.writer.get_extra_info('peername')
+
+        self.logger = logging.getLogger(f'Client {self.ip}:{self.port}')
+
+        self.logger.setLevel(logging.DEBUG)
+
+        self.logger.info('Connected')
+
+        self.handle(data, addr)
 
 
 class TcpServer:
@@ -130,7 +160,7 @@ class UdpServer:
     async def loop(self) -> None:
         loop = asyncio.get_running_loop()
 
-        transport, protocol = await loop.create_datagram_endpoint(self.cls,local_addr=(self.ip, self.port))
+        transport, protocol = await loop.create_datagram_endpoint(self.cls, (self.ip, self.port))
 
         transport.close()
 

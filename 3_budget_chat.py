@@ -73,8 +73,8 @@ class BudgetChatHandler(protohackers.TcpHandler):
 
         return message
 
-    async def send_message(self, message) -> None:
-        message = ''.join((message, '\n')).encode('ascii')
+    async def send_message(self, message: str) -> None:
+        message = f'{message}\n'.encode('ascii')
 
         self.logger.debug(f'<< {message}')
 
