@@ -1,5 +1,5 @@
 from support import protohackers
-from typing import Optional, Union
+from typing import Optional, Union, Any
 import re
 
 NAME_REGEX = re.compile(r'^[a-zA-Z0-9]{1,16}$')
@@ -13,7 +13,7 @@ class BudgetChatHandler(protohackers.TcpHandler):
 
         self.name = None
 
-    async def send_broadcast(self, data) -> None:
+    async def send_broadcast(self, data: str) -> None:
         await self.send_message(data)
 
     def is_broadcastable(self) -> bool:
@@ -59,7 +59,7 @@ class BudgetChatHandler(protohackers.TcpHandler):
 
     async def send_chatters_list(self) -> None:
         chatters_name = ', '.join(
-            [client.name for client in self.server.clients.copy() if client.is_broadcastable() and client is not self]
+            [client.name for client in self.server.clients if client.is_broadcastable() and client is not self]
         )
 
         chatters_name = chatters_name or 'nobody'

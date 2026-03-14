@@ -1,5 +1,5 @@
 from support import protohackers
-from typing import Dict, Tuple
+from typing import Dict
 
 
 class UnusualDatabaseProgramServer(protohackers.UdpServer):
@@ -14,7 +14,7 @@ class UnusualDatabaseProgramServer(protohackers.UdpServer):
 
 
 class UnusualDatabaseProgramHandler(protohackers.UdpHandler):
-    def handle(self, data, addr: Tuple[str, int]) -> None:
+    def handle(self, data: bytes) -> None:
         if len(data) >= 1000:
             return
 
@@ -40,7 +40,7 @@ class UnusualDatabaseProgramHandler(protohackers.UdpHandler):
 
         self.logger.debug(f'<< {data}')
 
-        self.transport.sendto(b'='.join(data), (self.ip, self.port))
+        self.transport.sendto(b'='.join(data), self.addr)
 
 
 if __name__ == '__main__':
