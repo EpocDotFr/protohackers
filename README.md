@@ -16,7 +16,7 @@ Clone this repo.
 
 ## Configuration
 
-Forward port `64444` from your router to your computer.
+Forward port `64444` from your router to your computer for both TCP and UDP.
 
 ## Usage
 
