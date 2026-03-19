@@ -128,9 +128,7 @@ class UdpServer:
         self.logger.info('Initialized')
 
     def handle_client(self):
-        client = self.cls(self)
-
-        return client
+        return self.cls(self)
 
     async def loop(self):
         loop = asyncio.get_running_loop()
@@ -150,7 +148,6 @@ class UdpServer:
             pass
 
         loop.close()
-        transport.close()
 
 
 class UdpHandler(metaclass=abc.ABCMeta):
@@ -168,9 +165,6 @@ class UdpHandler(metaclass=abc.ABCMeta):
     def handle(self, data: bytes) -> None:
         raise NotImplementedError
 
-    def finish(self) -> None:
-        self.transport.close()
-
     def connection_made(self, transport: asyncio.DatagramTransport):
         self.transport = transport
 
@@ -184,8 +178,6 @@ class UdpHandler(metaclass=abc.ABCMeta):
         self.logger.info('Connected')
 
         self.handle(data)
-
-        self.finish()
 
     def connection_lost(self, exc):
         self.logger.info('Disconnected')
